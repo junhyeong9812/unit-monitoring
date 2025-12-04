@@ -121,6 +121,8 @@ unit-monitoring/
 | 🗑️ GC 청소부 | 가비지 컬렉션 횟수 및 소요 시간 |
 
 #### 상태 이모지 예시
+<img width="1902" height="872" alt="image" src="https://github.com/user-attachments/assets/bc177531-20ca-4de5-acef-6b367b4539a6" />
+<img width="1899" height="833" alt="image" src="https://github.com/user-attachments/assets/e02195b1-8c47-41b3-90ce-745a6204b04f" />
 
 | 상태 | 낮음 | 높음 |
 |------|------|------|
