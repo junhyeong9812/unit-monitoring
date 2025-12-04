@@ -1,3 +1,55 @@
+# ===========================================
+# Spring Application Configuration
+# ===========================================
 spring:
   application:
     name: unit-monitoring
+
+# ===========================================
+# Server Configuration
+# ===========================================
+server:
+  port: 8080
+
+# ===========================================
+# Actuator & Monitoring Configuration
+# ===========================================
+management:
+  # Actuator 엔드포인트 설정
+  endpoints:
+    web:
+      exposure:
+        # 노출할 엔드포인트: health, info, prometheus, metrics, loggers
+        include: health,info,prometheus,metrics,loggers
+      base-path: /actuator
+  
+  # 개별 엔드포인트 설정
+  endpoint:
+    health:
+      # 상세 헬스 정보 항상 표시
+      show-details: always
+    prometheus:
+      # Prometheus 엔드포인트 활성화
+      enabled: true
+  
+  # Prometheus 메트릭 설정
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  
+  # 메트릭 태그 설정
+  metrics:
+    tags:
+      # 모든 메트릭에 application 태그 추가
+      application: ${spring.application.name}
+
+# ===========================================
+# Logging Configuration
+# ===========================================
+logging:
+  level:
+    root: INFO
+    com.example.unit_monitoring: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
