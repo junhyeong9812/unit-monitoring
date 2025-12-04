@@ -1,0 +1,80 @@
+# ===========================================
+# Prometheus Configuration
+# ===========================================
+
+# 전역 설정
+global:
+  # 메트릭 수집 주기
+  scrape_interval: 15s
+  # 규칙 평가 주기
+  evaluation_interval: 15s
+  # 외부 라벨 (Alertmanager 등에서 사용)
+  external_labels:
+    monitor: 'unit-monitoring-stack'
+
+# ===========================================
+# Alertmanager 연동 설정
+# ===========================================
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# ===========================================
+# Alert 규칙 파일
+# ===========================================
+rule_files:
+  - /etc/prometheus/alert-rules.yml
+
+# ===========================================
+# Scrape Configurations - 메트릭 수집 대상
+# ===========================================
+scrape_configs:
+  # -------------------------------------------
+  # Prometheus 자체 모니터링
+  # -------------------------------------------
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # -------------------------------------------
+  # Spring Boot Application 메트릭
+  # -------------------------------------------
+  - job_name: 'spring-boot-app'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: [ 'host.docker.internal:8080' ]
+        labels:
+          application: 'unit-monitoring'
+          service: 'spring-boot'
+
+  # -------------------------------------------
+  # Alertmanager 모니터링
+  # -------------------------------------------
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+        labels:
+          service: 'alertmanager'
+
+  # -------------------------------------------
+  # Loki 모니터링
+  # -------------------------------------------
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+        labels:
+          service: 'loki'
+
+  # -------------------------------------------
+  # Grafana 모니터링
+  # -------------------------------------------
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+        labels:
+          service: 'grafana'
