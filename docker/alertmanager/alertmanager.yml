@@ -1,0 +1,119 @@
+# ===========================================
+# Alertmanager Configuration
+# ===========================================
+# 알림 라우팅 및 수신자 설정
+
+# ===========================================
+# Global Configuration
+# ===========================================
+global:
+  # 알림 재전송 대기 시간
+  resolve_timeout: 5m
+
+  # SMTP 설정 (이메일 알림용 - 필요시 설정)
+  # smtp_smarthost: 'smtp.example.com:587'
+  # smtp_from: 'alertmanager@example.com'
+  # smtp_auth_username: 'your-username'
+  # smtp_auth_password: 'your-password'
+
+  # Slack 웹훅 URL (필요시 설정)
+  # slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+# ===========================================
+# Route Configuration - 알림 라우팅
+# ===========================================
+route:
+  # 그룹화 기준 라벨
+  group_by: ['alertname', 'severity', 'job']
+
+  # 새 알림 그룹 대기 시간
+  group_wait: 30s
+
+  # 동일 그룹 알림 간격
+  group_interval: 5m
+
+  # 알림 재전송 간격
+  repeat_interval: 4h
+
+  # 기본 수신자
+  receiver: 'default-receiver'
+
+  # 하위 라우트 설정
+  routes:
+    # Critical 알림 - 즉시 전송
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      group_wait: 10s
+      repeat_interval: 1h
+      continue: true
+
+    # Warning 알림
+    - match:
+        severity: warning
+      receiver: 'warning-receiver'
+      group_wait: 30s
+      repeat_interval: 4h
+
+# ===========================================
+# Inhibit Rules - 알림 억제 규칙
+# ===========================================
+inhibit_rules:
+  # Critical 알림이 있으면 같은 alertname의 Warning 억제
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'job']
+
+# ===========================================
+# Receivers - 알림 수신자
+# ===========================================
+receivers:
+  # -------------------------------------------
+  # 기본 수신자 (웹훅)
+  # -------------------------------------------
+  - name: 'default-receiver'
+    webhook_configs:
+      # 테스트용 웹훅 (필요시 실제 URL로 변경)
+      - url: 'http://app:8080/webhook/alerts'
+        send_resolved: true
+
+  # -------------------------------------------
+  # Critical 알림 수신자
+  # -------------------------------------------
+  - name: 'critical-receiver'
+    webhook_configs:
+      - url: 'http://app:8080/webhook/alerts/critical'
+        send_resolved: true
+    # Slack 알림 (필요시 활성화)
+    # slack_configs:
+    #   - channel: '#alerts-critical'
+    #     send_resolved: true
+    #     title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+    # 이메일 알림 (필요시 활성화)
+    # email_configs:
+    #   - to: 'admin@example.com'
+    #     send_resolved: true
+
+  # -------------------------------------------
+  # Warning 알림 수신자
+  # -------------------------------------------
+  - name: 'warning-receiver'
+    webhook_configs:
+      - url: 'http://app:8080/webhook/alerts/warning'
+        send_resolved: true
+    # Slack 알림 (필요시 활성화)
+    # slack_configs:
+    #   - channel: '#alerts-warning'
+    #     send_resolved: true
+    #     title: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+# ===========================================
+# Templates - 알림 템플릿 (선택사항)
+# ===========================================
+# templates:
+#   - '/etc/alertmanager/templates/*.tmpl'
