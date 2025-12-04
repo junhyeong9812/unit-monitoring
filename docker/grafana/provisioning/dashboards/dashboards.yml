@@ -1,0 +1,19 @@
+# ===========================================
+# Grafana Dashboards Provisioning
+# ===========================================
+# Grafana 시작 시 자동으로 대시보드 로드
+
+apiVersion: 1
+
+providers:
+  - name: 'Unit Monitoring Dashboards'
+    orgId: 1
+    folder: 'Unit Monitoring'
+    folderUid: 'unit-monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: false
