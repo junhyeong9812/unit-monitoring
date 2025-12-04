@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+<!-- ===========================================
+Property Definitions
+=========================================== -->
+<property name="APP_NAME" value="unit-monitoring"/>
+<!-- Docker 환경에서는 loki:3100, 로컬에서는 localhost:3100 사용 -->
+<property name="LOKI_URL" value="${LOKI_URL:-http://localhost:3100}"/>
+
+<!-- ===========================================
+Console Appender - 콘솔 로그 출력
+=========================================== -->
+<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+<encoder>
+<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+</encoder>
+</appender>
+
+<!-- ===========================================
+Loki Appender - Grafana Loki로 로그 전송
+=========================================== -->
+<appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+<!-- Loki HTTP 전송 설정 -->
+<http>
+<url>${LOKI_URL}/loki/api/v1/push</url>
+</http>
+<format>
+<!-- 라벨 설정 - Loki에서 로그 필터링에 사용 -->
+<label>
+<pattern>application=${APP_NAME},host=${HOSTNAME},level=%level</pattern>
+</label>
+<!-- 로그 메시지 포맷 -->
+<message>
+<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+</message>
+</format>
+</appender>
+
+<!-- ===========================================
+Root Logger Configuration
+=========================================== -->
+<root level="INFO">
+<appender-ref ref="CONSOLE"/>
+<appender-ref ref="LOKI"/>
+</root>
+
+<!-- ===========================================
+Application Logger - 애플리케이션 패키지 로그
+=========================================== -->
+<logger name="com.example.unit_monitoring" level="DEBUG" additivity="false">
+<appender-ref ref="CONSOLE"/>
+<appender-ref ref="LOKI"/>
+</logger>
+</configuration>
